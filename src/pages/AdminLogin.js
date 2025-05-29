@@ -12,11 +12,9 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock as LockIcon } from '@mui/icons-material';
 
-// Admin credentials - in a real app, these would be in a secure backend or environment variables
-// These values are just for development and should be changed in production
 const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: 'cleanroom123'
+  username: process.env.REACT_APP_ADMIN_USERNAME,
+  password: process.env.REACT_APP_ADMIN_PASSWORD
 };
 
 const AdminLogin = () => {

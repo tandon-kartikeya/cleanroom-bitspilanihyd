@@ -50,6 +50,7 @@ import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { format, parseISO } from 'date-fns';
 import { BookingContext } from '../App';
 import { AuthContext } from '../context/AuthContext';
+import { getFacultyOptions } from '../config/facultyList';
 import { getStudentBookings } from '../services/BookingService';
 import { useNavigate } from 'react-router-dom';
 
@@ -83,13 +84,8 @@ const timeSlotOptions = [
   { value: '17:00', label: '5:00 PM - 8:00 PM' }
 ];
 
-const facultyOptions = [
-  { value: 'faculty1', label: 'Faculty 1', email: 'f20211878@hyderabad.bits-pilani.ac.in' },
-  { value: 'faculty2', label: 'Faculty 2', email: 'f20213138@hyderabad.bits-pilani.ac.in' },
-  { value: 'faculty3', label: 'Faculty 3', email: 'f20210485@hyderabad.bits-pilani.ac.in' },
-  { value: 'faculty4', label: 'Faculty 4', email: '' },
-  { value: 'faculty5', label: 'Faculty 5', email: '' }
-];
+// Using faculty options from shared configuration
+const facultyOptions = getFacultyOptions();
 
 // User type options
 const userTypeOptions = [

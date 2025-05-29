@@ -5,6 +5,7 @@ import {
   onAuthStateChanged 
 } from 'firebase/auth';
 import { auth, signInWithGoogle as firebaseSignInWithGoogle } from '../utils/firebase';
+import { getFacultyEmails, getFacultyIdByEmail } from '../config/facultyList';
 
 // Create the Authentication Context
 export const AuthContext = createContext();
@@ -14,6 +15,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [userRole, setUserRole] = useState(null); // 'student', 'faculty', or null
+
+  // Using faculty email list from shared configuration
 
   // Sign in with Google
   const signInWithGoogle = async () => {
@@ -25,43 +28,32 @@ export const AuthProvider = ({ children }) => {
       // Get user email
       const email = result.user.email;
       
-      // For local development, allow any email
-      // Uncomment this code for production
-      /*
+      // Enforce BITS Pilani Hyderabad email domain restriction
       if (!email.endsWith('@hyderabad.bits-pilani.ac.in')) {
         await signOut(auth);
         setAuthError('You must use your BITS Pilani Hyderabad email to sign in');
         return null;
       }
-      */
-      
-      // For testing, we'll accept any email but log a message
-      console.log('LOCAL DEV: Bypassing email domain restriction for testing');
-      if (!email.endsWith('@hyderabad.bits-pilani.ac.in')) {
-        console.warn('Note: In production, only @hyderabad.bits-pilani.ac.in emails would be allowed');
-      }
       
       // Determine if student or faculty based on email pattern
-      // For local development, provide a way to test both roles
-      // In production, this would be based on email pattern
-      
-      let isStudent;
-      
-      // For BITS emails, use the standard pattern
-      if (email.endsWith('@hyderabad.bits-pilani.ac.in')) {
-        // Student emails start with 'f' followed by numbers
-        isStudent = email.match(/^f\d+@hyderabad\.bits-pilani\.ac\.in$/);
-      } else {
-        // For non-BITS emails during local testing:
-        // If email contains 'student', treat as student, otherwise as faculty
-        isStudent = email.toLowerCase().includes('student');
-        console.log(`LOCAL DEV: Assigning role as ${isStudent ? 'student' : 'faculty'} based on email: ${email}`);
-      }
+      // Student emails start with 'f', 'p', or 'h' followed by numbers
+      const isStudent = email.match(/^[fph]\d+@hyderabad\.bits-pilani\.ac\.in$/);
       
       if (isStudent) {
+        // Valid student email format
         setUserRole('student');
       } else {
-        setUserRole('faculty');
+        // If not a student email pattern, check if it's in the allowed faculty list
+        const facultyEmails = getFacultyEmails();
+        if (facultyEmails.includes(email)) {
+          // Valid faculty email
+          setUserRole('faculty');
+        } else {
+          // Not a valid student pattern or in faculty list
+          await signOut(auth);
+          setAuthError('Access restricted. Your email is not authorized for this application.');
+          return null;
+        }
       }
       
       return result.user;
@@ -116,9 +108,40 @@ export const AuthProvider = ({ children }) => {
       
       if (user) {
         const email = user.email;
+        
+        // Verify email domain is valid
+        if (!email.endsWith('@hyderabad.bits-pilani.ac.in')) {
+          // Sign out and set error
+          signOut(auth).then(() => {
+            setAuthError('You must use your BITS Pilani Hyderabad email to sign in');
+          });
+          setUserRole(null);
+          setLoading(false);
+          return;
+        }
+        
         // Re-determine role on auth state change
-        const isStudent = email.match(/^f\d+@hyderabad\.bits-pilani\.ac\.in$/);
-        setUserRole(isStudent ? 'student' : 'faculty');
+        const isStudent = email.match(/^[fph]\d+@hyderabad\.bits-pilani\.ac\.in$/);
+        
+        if (isStudent) {
+          // Valid student email format
+          setUserRole('student');
+        } else {
+          // If not a student email pattern, check if it's in the allowed faculty list
+          const facultyEmails = getFacultyEmails();
+          if (facultyEmails.includes(email)) {
+            // Valid faculty email
+            setUserRole('faculty');
+          } else {
+            // Not a valid student pattern or in faculty list
+            signOut(auth).then(() => {
+              setAuthError('Access restricted. Your email is not authorized for this application.');
+            });
+            setUserRole(null);
+            setLoading(false);
+            return;
+          }
+        }
       } else {
         setUserRole(null);
       }

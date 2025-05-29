@@ -47,6 +47,8 @@ REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 REACT_APP_FIREBASE_APP_ID=your_app_id
 REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
+REACT_APP_ADMIN_USERNAME=your_admin_username
+REACT_APP_ADMIN_PASSWORD=your_admin_password
 ```
 
 You can find these values in your Firebase project settings.

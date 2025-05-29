@@ -48,15 +48,9 @@ import { useNavigate } from 'react-router-dom';
 import { BookingContext } from '../App';
 import { AuthContext } from '../context/AuthContext';
 import { getFacultyBookings } from '../services/BookingService';
+import { facultyList, getFacultyNameById } from '../config/facultyList';
 
-// Faculty email to ID mapping
-const facultyMapping = [
-  { id: 'faculty1', email: 'f20211878@hyderabad.bits-pilani.ac.in', name: 'Faculty 1' },
-  { id: 'faculty2', email: 'f20213183@hyderabad.bits-pilani.ac.in', name: 'Faculty 2' },
-  { id: 'faculty3', email: 'f20210485@hyderabad.bits-pilani.ac.in', name: 'Faculty 3' },
-  { id: 'faculty4', email: '', name: 'Faculty 4' },
-  { id: 'faculty5', email: '', name: 'Faculty 5' }
-];
+// Using faculty list from shared configuration
 
 // Data for form
 const equipmentOptions = [
@@ -139,7 +133,7 @@ const Faculty = () => {
   // Determine faculty ID based on email
   useEffect(() => {
     if (currentUser && currentUser.email) {
-      const faculty = facultyMapping.find(f => f.email === currentUser.email);
+      const faculty = facultyList.find(f => f.email === currentUser.email);
       if (faculty) {
         setFacultyId(faculty.id);
       }
@@ -167,11 +161,8 @@ const Faculty = () => {
     fetchFacultyBookings();
   }, [currentUser, facultyId, bookings]);
   
-  // Get faculty name based on ID
-  const getFacultyName = (id) => {
-    const faculty = facultyMapping.find(f => f.id === id);
-    return faculty ? faculty.name : id;
-  };
+  // Get faculty name based on ID - using the shared helper function
+  const getFacultyName = getFacultyNameById;
   
   // Filter bookings by faculty 
   const getFilteredBookings = () => {
